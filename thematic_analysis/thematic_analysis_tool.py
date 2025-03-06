@@ -10,14 +10,13 @@ def show_menu():
     return input("Select an option (1-4): ")
 
 def main():
-    # Get the base directory for thematic_analysis
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
     
     while True:
         choice = show_menu()
         
         if choice == '1':
-            # Import here to avoid circular imports
             from analyze_pdf import process_pdf_to_excel
             pdf_path = input("Enter the path to your PDF file: ").strip()
             if not os.path.exists(pdf_path):
@@ -27,7 +26,6 @@ def main():
                 
         elif choice == '2':
             from learn_from_feedback import learn_from_feedback
-            # Show the feedback_excel directory and suggest files
             feedback_dir = os.path.join(base_dir, "feedback_excel")
             print(f"\nFeedback files should be in: {feedback_dir}")
             
@@ -40,7 +38,6 @@ def main():
             
             feedback_file = input("Enter the path to the feedback Excel file: ").strip()
             
-            # If user just entered a filename without path, assume it's in the feedback_excel directory
             if not os.path.isabs(feedback_file) and not feedback_file.startswith('./'):
                 if not os.path.exists(feedback_file):
                     potential_path = os.path.join(feedback_dir, feedback_file)

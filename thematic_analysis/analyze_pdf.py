@@ -9,7 +9,7 @@ import time
 DEEPSEEK_LOCAL_URL = "http://localhost:8000/v1/chat/completions"
 MODEL_NAME = "deepseek-chat"
 
-# Update the prompt file path to use the correct location
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 PROMPT_FILE = os.path.join(base_dir, "improved_prompt.txt")
 
@@ -91,7 +91,6 @@ def process_pdf_to_excel(pdf_path):
             result = call_deepseek_local(line)
             results.append(result)
             print(f"Processed line {i+1}/{total_lines} - Theme: {result['selective_code']}")
-            # Add a small delay to avoid overwhelming the API
             time.sleep(0.5)
         except Exception as e:
             print(f"Error processing line {i+1}: {str(e)}")
@@ -99,7 +98,7 @@ def process_pdf_to_excel(pdf_path):
     
     df = pd.DataFrame(results)
     
-    # Add a column for human corrections
+
     df['Human_Corrected_Theme'] = ""
     
     output_path = os.path.splitext(pdf_path)[0] + "_analysis.xlsx"

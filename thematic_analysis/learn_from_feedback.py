@@ -3,7 +3,7 @@ from collections import defaultdict
 import os
 import datetime
 
-# Update the prompt file path to use the correct location
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 PROMPT_FILE = os.path.join(base_dir, "improved_prompt.txt")
 
@@ -14,7 +14,6 @@ def learn_from_feedback(feedback_excel_path):
         if not {'line', 'LLM_Predicted_Theme', 'Human_Corrected_Theme'}.issubset(df.columns):
             raise ValueError("Feedback file must contain columns: line, LLM_Predicted_Theme, Human_Corrected_Theme")
 
-        # Check if there are any corrections
         has_corrections = False
         for _, row in df.iterrows():
             predicted = row['LLM_Predicted_Theme']
@@ -42,14 +41,12 @@ def learn_from_feedback(feedback_excel_path):
             for predicted, corrections in correction_counts.items()
         ])
 
-        # Create a backup of the current prompt
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_file = f"{PROMPT_FILE}.{timestamp}.bak"
         
         with open(PROMPT_FILE, "r") as f:
             current_prompt = f.read().strip()
             
-        # Save backup
         with open(backup_file, "w") as f:
             f.write(current_prompt)
             
