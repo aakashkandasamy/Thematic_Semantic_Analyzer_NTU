@@ -21,14 +21,13 @@ A comprehensive tool for qualitative research that helps analyze text data using
 ```
 thematic_analysis/
 ├── input_pdfs/                    # PDFs to analyze
-├── output_excel/                  # AI-generated Excel files
 ├── feedback_excel/                # Human-corrected Excel files
-├── prompt_backups/                # Automatic backups of prompts
 ├── analyze_pdf.py                 # Main analysis script
 ├── learn_from_feedback.py         # Feedback processor
 ├── thematic_analysis_tool.py      # Unified interface
 ├── improved_prompt.txt            # Auto-evolving prompt file
-└── README.md                      # This documentation
+
+README.md                      # This documentation
 ```
 
 ## 🛠️ Installation
