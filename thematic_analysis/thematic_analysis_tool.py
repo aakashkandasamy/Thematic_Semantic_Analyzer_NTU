@@ -10,6 +10,9 @@ def show_menu():
     return input("Select an option (1-4): ")
 
 def main():
+    # Get the base directory for thematic_analysis
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
     while True:
         choice = show_menu()
         
@@ -24,14 +27,33 @@ def main():
                 
         elif choice == '2':
             from learn_from_feedback import learn_from_feedback
+            # Show the feedback_excel directory and suggest files
+            feedback_dir = os.path.join(base_dir, "feedback_excel")
+            print(f"\nFeedback files should be in: {feedback_dir}")
+            
+            if os.path.exists(feedback_dir):
+                feedback_files = [f for f in os.listdir(feedback_dir) if f.endswith('.xlsx')]
+                if feedback_files:
+                    print("Available feedback files:")
+                    for i, file in enumerate(feedback_files, 1):
+                        print(f"{i}. {file}")
+            
             feedback_file = input("Enter the path to the feedback Excel file: ").strip()
+            
+            # If user just entered a filename without path, assume it's in the feedback_excel directory
+            if not os.path.isabs(feedback_file) and not feedback_file.startswith('./'):
+                if not os.path.exists(feedback_file):
+                    potential_path = os.path.join(feedback_dir, feedback_file)
+                    if os.path.exists(potential_path):
+                        feedback_file = potential_path
+            
             if not os.path.exists(feedback_file):
                 print(f"❌ File not found: {feedback_file}")
             else:
                 learn_from_feedback(feedback_file)
                 
         elif choice == '3':
-            prompt_file = "improved_prompt.txt"
+            prompt_file = os.path.join(base_dir, "improved_prompt.txt")
             if os.path.exists(prompt_file):
                 with open(prompt_file, "r") as f:
                     print("\n=== Current Prompt ===")

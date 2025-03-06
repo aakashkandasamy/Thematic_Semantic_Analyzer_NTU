@@ -3,7 +3,9 @@ from collections import defaultdict
 import os
 import datetime
 
-PROMPT_FILE = "improved_prompt.txt"
+# Update the prompt file path to use the correct location
+base_dir = os.path.dirname(os.path.abspath(__file__))
+PROMPT_FILE = os.path.join(base_dir, "improved_prompt.txt")
 
 def learn_from_feedback(feedback_excel_path):
     try:

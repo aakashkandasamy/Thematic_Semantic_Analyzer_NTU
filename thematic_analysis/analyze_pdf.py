@@ -9,13 +9,16 @@ import time
 DEEPSEEK_LOCAL_URL = "http://localhost:8000/v1/chat/completions"
 MODEL_NAME = "deepseek-chat"
 
-PROMPT_FILE = "improved_prompt.txt"
+# Update the prompt file path to use the correct location
+base_dir = os.path.dirname(os.path.abspath(__file__))
+PROMPT_FILE = os.path.join(base_dir, "improved_prompt.txt")
 
 if os.path.exists(PROMPT_FILE):
     with open(PROMPT_FILE, "r") as f:
         THEMATIC_PROMPT = f.read().strip()
 else:
-
+    print(f"❌ Prompt file not found at: {PROMPT_FILE}")
+    
     THEMATIC_PROMPT = """
 You are a qualitative research assistant specializing in thematic analysis. 
 Analyze each line from qualitative research data related to visual plagiarism, creative integrity, and professional ethics in Singapore's Art & Design industry.
