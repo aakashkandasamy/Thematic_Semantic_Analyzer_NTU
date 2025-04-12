@@ -9,6 +9,12 @@ def show_menu():
     print("4. Exit")
     return input("Select an option (1-4): ")
 
+def list_files_in_directory(directory, extension):
+    files = [f for f in os.listdir(directory) if f.endswith(extension)]
+    for i, file in enumerate(files, 1):
+        print(f"{i}. {file}")
+    return files
+
 def main():
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,36 +24,21 @@ def main():
         
         if choice == '1':
             from analyze_pdf import process_pdf_to_excel
-            pdf_path = input("Enter the path to your PDF file: ").strip()
-            if not os.path.exists(pdf_path):
-                print(f"❌ File not found: {pdf_path}")
-            else:
-                process_pdf_to_excel(pdf_path)
+            pdf_dir = os.path.join(base_dir, "input_pdfs")
+            print(f"\nPDF files available in: {pdf_dir}")
+            pdf_files = list_files_in_directory(pdf_dir, '.pdf')
+            pdf_choice = int(input("Select a PDF file by number: ")) - 1
+            pdf_path = os.path.join(pdf_dir, pdf_files[pdf_choice])
+            process_pdf_to_excel(pdf_path)
                 
         elif choice == '2':
             from learn_from_feedback import learn_from_feedback
             feedback_dir = os.path.join(base_dir, "feedback_excel")
-            print(f"\nFeedback files should be in: {feedback_dir}")
-            
-            if os.path.exists(feedback_dir):
-                feedback_files = [f for f in os.listdir(feedback_dir) if f.endswith('.xlsx')]
-                if feedback_files:
-                    print("Available feedback files:")
-                    for i, file in enumerate(feedback_files, 1):
-                        print(f"{i}. {file}")
-            
-            feedback_file = input("Enter the path to the feedback Excel file: ").strip()
-            
-            if not os.path.isabs(feedback_file) and not feedback_file.startswith('./'):
-                if not os.path.exists(feedback_file):
-                    potential_path = os.path.join(feedback_dir, feedback_file)
-                    if os.path.exists(potential_path):
-                        feedback_file = potential_path
-            
-            if not os.path.exists(feedback_file):
-                print(f"❌ File not found: {feedback_file}")
-            else:
-                learn_from_feedback(feedback_file)
+            print(f"\nFeedback files available in: {feedback_dir}")
+            feedback_files = list_files_in_directory(feedback_dir, '.xlsx')
+            feedback_choice = int(input("Select a feedback file by number: ")) - 1
+            feedback_file = os.path.join(feedback_dir, feedback_files[feedback_choice])
+            learn_from_feedback(feedback_file)
                 
         elif choice == '3':
             prompt_file = os.path.join(base_dir, "improved_prompt.txt")

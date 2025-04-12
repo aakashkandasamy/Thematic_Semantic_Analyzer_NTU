@@ -4,11 +4,18 @@ import pandas as pd
 import requests
 import json
 import time
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
-DEEPSEEK_LOCAL_URL = "http://localhost:8000/v1/chat/completions"
-MODEL_NAME = "deepseek-chat"
+# Gemini API Configuration
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY not found in environment variables. Please check your .env file.")
 
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+MODEL_NAME = "gemini-1.5-flash"
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 PROMPT_FILE = os.path.join(base_dir, "improved_prompt.txt")
@@ -58,27 +65,57 @@ def extract_lines_from_pdf(pdf_path):
                 lines.extend(line.strip() for line in text.split('\n') if line.strip())
     return lines
 
-def call_deepseek_local(line):
+def call_gemini_api(line):
     user_prompt = f"{THEMATIC_PROMPT}\n\nLine to analyze:\n{line}"
 
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [
-            {"role": "system", "content": "You are a thematic analysis expert."},
-            {"role": "user", "content": user_prompt}
-        ],
-        "temperature": 0.5,
-        "max_tokens": 1024
+    headers = {
+        "Content-Type": "application/json",
     }
 
-    response = requests.post(DEEPSEEK_LOCAL_URL, json=payload)
-    response.raise_for_status()
-    result_text = response.json()['choices'][0]['message']['content'].strip()
+    payload = {
+        "contents": [{
+            "parts": [{
+                "text": user_prompt
+            }]
+        }],
+        "generationConfig": {
+            "temperature": 0.5,
+            "maxOutputTokens": 1024,
+        }
+    }
 
     try:
-        return json.loads(result_text)
-    except json.JSONDecodeError:
-        return {"line": line, "open_code": "Error", "axial_code": "Error", "selective_code": "Error"}
+        response = requests.post(
+            f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+            headers=headers,
+            json=payload
+        )
+        response.raise_for_status()
+        
+        # Extract the response text from Gemini's response structure
+        result_text = response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+        
+        # Try to find JSON in the response
+        try:
+            # Find the first { and last } to extract JSON
+            start = result_text.find('{')
+            end = result_text.rfind('}') + 1
+            if start != -1 and end != -1:
+                json_str = result_text[start:end]
+                return json.loads(json_str)
+            else:
+                raise json.JSONDecodeError("No JSON found in response", result_text, 0)
+        except json.JSONDecodeError:
+            # If JSON parsing fails, return a structured error
+            return {
+                "line": line,
+                "open_code": "Error parsing response",
+                "axial_code": "Error",
+                "selective_code": "Error"
+            }
+    except requests.exceptions.RequestException as e:
+        print(f"API Error: {str(e)}")
+        return {"line": line, "open_code": "API Error", "axial_code": "API Error", "selective_code": "API Error"}
 
 def process_pdf_to_excel(pdf_path):
     lines = extract_lines_from_pdf(pdf_path)
@@ -88,9 +125,10 @@ def process_pdf_to_excel(pdf_path):
     results = []
     for i, line in enumerate(lines):
         try:
-            result = call_deepseek_local(line)
+            result = call_gemini_api(line)
             results.append(result)
             print(f"Processed line {i+1}/{total_lines} - Theme: {result['selective_code']}")
+            # Add a small delay to respect API rate limits
             time.sleep(0.5)
         except Exception as e:
             print(f"Error processing line {i+1}: {str(e)}")
@@ -98,7 +136,6 @@ def process_pdf_to_excel(pdf_path):
     
     df = pd.DataFrame(results)
     
-
     df['Human_Corrected_Theme'] = ""
     
     output_path = os.path.splitext(pdf_path)[0] + "_analysis.xlsx"
