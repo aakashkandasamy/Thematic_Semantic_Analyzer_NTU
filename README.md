@@ -1,6 +1,6 @@
 # Thematic Analysis Tool
 
-A comprehensive tool for qualitative research that helps analyze text data using Braun & Clarke's Reflexive Thematic Analysis framework. This tool processes PDF documents, performs thematic analysis using a local LLM, and learns from human feedback to continuously improve its analysis capabilities.
+A comprehensive tool for qualitative research that helps analyze text data using Braun & Clarke's Reflexive Thematic Analysis framework. This tool processes PDF documents, performs thematic analysis using Google's Gemini API, and learns from human feedback to continuously improve its analysis capabilities.
 
 ## 🚀 Project Overview
 
@@ -8,7 +8,7 @@ A comprehensive tool for qualitative research that helps analyze text data using
 
 ### Core Features
 ✅ PDF to line-by-line extraction  
-✅ Automatic **thematic analysis** using **DeepSeek (local)** or **any OpenAI-compatible LLM**  
+✅ Automatic **thematic analysis** using **Google's Gemini API**  
 ✅ Saves initial analysis to Excel with a column for human corrections  
 ✅ Human review and correction of themes in the Excel file  
 ✅ Feedback system: Corrected themes are fed back into the LLM to **continuously improve the model**  
@@ -16,16 +16,19 @@ A comprehensive tool for qualitative research that helps analyze text data using
 ✅ Backup system for prompt versions  
 ✅ User-friendly interface with progress tracking
 
-## 📂 Recommended Folder Structure
+## 📂 Project Structure
 
 ```
 thematic_analysis/
 ├── input_pdfs/                    # PDFs to analyze
 ├── feedback_excel/                # Human-corrected Excel files
+├── past_prompts/                  # Backup of previous prompt versions
 ├── analyze_pdf.py                 # Main analysis script
 ├── learn_from_feedback.py         # Feedback processor
 ├── thematic_analysis_tool.py      # Unified interface
 ├── improved_prompt.txt            # Auto-evolving prompt file
+├── .env                          # Environment variables (API keys)
+├── requirements.txt               # Python dependencies
 
 README.md                      # This documentation
 ```
@@ -40,19 +43,24 @@ README.md                      # This documentation
 
 2. Install the required dependencies:
    ```bash
-   pip install pandas pdfplumber requests
+   pip install -r requirements.txt
    ```
 
-3. Set up a local DeepSeek LLM server (or modify the code to use your preferred LLM API)
+3. Set up your environment:
+   - Create a `.env` file in the project root
+   - Add your Gemini API key:
+     ```
+     GEMINI_API_KEY=your_api_key_here
+     ```
 
-4. Create the recommended folder structure:
+4. Create the required folders:
    ```bash
-   mkdir -p input_pdfs output_excel feedback_excel prompt_backups
+   mkdir -p input_pdfs feedback_excel past_prompts
    ```
 
 ## 📋 Usage
 
-### Option 1: Using the Unified Interface
+### Using the Unified Interface
 
 Run the main script to access all features through a menu:
 
@@ -66,75 +74,39 @@ This will present you with the following options:
 3. View Current Prompt
 4. Exit
 
-### Option 2: Step-by-Step Workflow
+### Step-by-Step Workflow
 
 #### Step 1: Analyze a PDF
-Run the main analysis script:
-```bash
-python analyze_pdf.py
-```
+1. Place your PDF file in the `input_pdfs/` directory
+2. Run the analysis through the unified interface
+3. Select the PDF file from the list
+4. The script will:
+   - Extract text from the PDF
+   - Process each line through Gemini API with progress updates
+   - Generate an Excel file with the analysis results
+   - Include a column for human corrections
 
-You will be prompted to enter the path to the PDF you want to analyze.
-For example, if the PDF is stored in the input_pdfs/ folder, enter:
-```
-input_pdfs/ResearchReport.pdf
-```
-
-The script will:
-1. Extract text from the PDF
-2. Process each line through the LLM with progress updates
-3. Generate an Excel file with the analysis results
-4. Include a column for human corrections
-
-After processing, the app will generate:
-```
-output_excel/ResearchReport_analysis.xlsx
-```
-
-This Excel file contains:
-- The original text line from the PDF
-- Open code (short description)
-- Axial code (broader category)
-- Selective code (high-level theme)
-- Human_Corrected_Theme (empty column for your feedback)
+The output Excel file will be created in the same directory as the input PDF, with "_analysis.xlsx" appended to the filename.
 
 #### Step 2: Human Review
-
-Open the Excel file generated in output_excel/.
-
-In the "Human_Corrected_Theme" column, review and update the AI-predicted themes if necessary.
-
-Once complete, save the file to:
-```
-feedback_excel/ResearchReport_corrected.xlsx
-```
+1. Open the generated Excel file
+2. Review the analysis in the following columns:
+   - `line`: Original text from the PDF
+   - `open_code`: Short description of the line
+   - `axial_code`: Broader category
+   - `selective_code`: High-level theme
+   - `Human_Corrected_Theme`: Column for your corrections
+3. Make corrections in the `Human_Corrected_Theme` column
+4. Save the corrected file in the `feedback_excel/` directory
 
 #### Step 3: Learn from Feedback
-
-Run the feedback learning script:
-```bash
-python learn_from_feedback.py
-```
-
-You will be prompted to enter the path to the corrected Excel file.
-For example:
-```
-feedback_excel/ResearchReport_corrected.xlsx
-```
-
-This process will:
-- Compare the AI-predicted themes and the human-corrected themes
-- Create a backup of the current prompt
-- Automatically update improved_prompt.txt with new learning
-- Next time you analyze a PDF, the app will use this improved prompt automatically
-
-## 🔄 Workflow Summary
-
-```
-PDF ➡️ Line Extraction ➡️ AI Thematic Analysis ➡️ Excel Output
-        ⬇️                                     ⬆️
-   Human Review (Corrections)  ➡️  Learn from Feedback ➡️ Improved Prompt
-```
+1. Run the feedback learning through the unified interface
+2. Select the corrected Excel file
+3. The system will:
+   - Compare AI predictions with human corrections
+   - Create a backup of the current prompt
+   - Update `improved_prompt.txt` with new learning
+   - Next analysis will use the improved prompt automatically
 
 ## 📊 Understanding the Output
 
@@ -150,13 +122,17 @@ The analysis produces four key elements for each line of text:
   - Thematic Analysis Process
   - Design Education & Industry Practices
 
+## 🔒 Security Note
+
+The `.env` file containing your API key is automatically excluded from version control via `.gitignore`. Never commit this file to your repository.
+
 ## ⚙️ Customization
 
-You can modify the `improved_prompt.txt` file to customize the thematic analysis framework, definitions, or output format. The system will automatically incorporate human feedback into this prompt over time and create backups of previous versions.
+You can modify the `improved_prompt.txt` file to customize the thematic analysis framework, definitions, or output format. The system will automatically incorporate human feedback into this prompt over time and create backups in the `past_prompts/` directory.
 
 ## 🔍 Troubleshooting
 
-- **API Connection Issues**: Ensure your local LLM server is running at the specified URL
+- **API Connection Issues**: Ensure your Gemini API key is correctly set in the `.env` file
 - **PDF Extraction Problems**: Some PDFs may have security features that prevent text extraction
 - **Excel File Format**: Ensure you maintain the required column structure when editing feedback files
 - **No Corrections Found**: If the script reports no corrections found, ensure you've filled in the Human_Corrected_Theme column with values that differ from the LLM predictions
